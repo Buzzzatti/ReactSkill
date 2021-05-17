@@ -1,92 +1,110 @@
-import React, { Component } from 'react';
-import './App.css';
+import React, { Component } from 'react'
+import './App.css'
 import Car from './Car/Car'
+import ErrorBoundary from './ErrorBoundary/ErrorBoundary'
+import Counter from './Counter/Counter'
+
+export const ClickedContext = React.createContext(false)
 
 class App extends Component {
 
     constructor(props) {
-        console.log('App constructor')
         super(props)
+
         this.state = {
-            cars:[
-                {name:'Ford', year: 2018},
-                // {name:'Audi', year: 2016},
-                // {name:'Mazda', year: 2020}
+            clicked: false,
+            cars: [
+                {name: 'Ford', year: 2018},
+                {name: 'Audi', year: 2016},
+                {name: 'Mazda', year: 2010}
             ],
-            pagetitle: 'React components',
+            pageTitle: 'React components',
             showCars: false
         }
     }
 
+    toggleCarsHandler = () => {
+        this.setState({
+            showCars: !this.state.showCars
+        })
+    }
 
-  toggleCarsHandler = () => {
-     this.setState({
-       showCars: !this.state.showCars
-     })
-  }
-
-  onChangeName(name, index) {
+    onChangeName(name, index) {
         const car = this.state.cars[index]
         car.name = name
         const cars = [...this.state.cars]
         cars[index] = car
-        this.setState({
-            cars:cars
-        })
-    }
-  deleteHandler(index) {
-      const cars = this.state.cars.concat()
-      cars.splice(index, 1)
-        this.setState({ cars })
+        this.setState({cars})
     }
 
-  componentWillMount() {
+    deleteHandler(index) {
+        const cars = this.state.cars.concat()
+        cars.splice(index, 1)
+
+        this.setState({cars})
+
+    }
+
+    componentWillMount() {
         console.log('App componentWillMount')
-  }
+    }
 
-  componentDidMount() {
+    componentDidMount() {
         console.log('App componentDidMount')
-  }
+    }
 
     render() {
-        console.log('render')
-    const divStyle = {
-      textAlign: 'center'
-    }
+        console.log('App render')
+        const divStyle = {
+            textAlign: 'center'
+        }
+
+        let cars = null
+
+        if (this.state.showCars) {
+            cars = this.state.cars.map((car, index) => {
+                return (
+                    <ErrorBoundary key={index}>
+                        <Car
+                            name={car.name}
+                            year={car.year}
+                            onDelete={this.deleteHandler.bind(this, index)}
+                            onChangeName={event => this.onChangeName(event.target.value, index)}
+                        />
+                    </ErrorBoundary>
+                )
+            })
+        }
+
+        return (
+            <div style={divStyle}>
+                {/*<h1>{this.state.pageTitle}</h1>*/}
+                <h1>{this.props.title}</h1>
+
+                <ClickedContext.Provider value={this.state.clicked}>
+                    <Counter />
+                </ClickedContext.Provider>
 
 
-    let cars = null
+                <hr/>
+                <button
+                    style={{marginTop: 20}}
+                    className={'AppButton'}
+                    onClick={this.toggleCarsHandler}
+                >Toggle cars</button>
 
-    if(this.state.showCars) {
-      cars = this.state.cars.map((cars, index) => {
-        return(
-            <Car
-                key={index}
-                name={cars.name}
-                year={cars.year}
-                onDelete={this.deleteHandler.bind(this, index)}
-                onChangeName={event => this.onChangeName(event.target.value, index)}
-            />
-        )
-      })
-    }
+                <button onClick={() => this.setState({clicked: true})}>Change Clicked</button>
 
-    return (
-        <div style={divStyle}>
-          {/*<h1>{this.state.pagetitle}</h1>*/}
-            <h1>{this.props.title}</h1>
-          <button
-              onClick={this.toggleCarsHandler}
-          >toggle cars</button>
-            <div style={{
-                width:'400px',
-                margin:'auto',
-                paddingTop: '20px'
-            }}>
-          { cars }
+                <div style={{
+                    width: 400,
+                    margin: 'auto',
+                    paddingTop: '20px'
+                }}>
+                    { cars }
+                </div>
             </div>
-        </div>
-    )
-  }
+        );
+    }
 }
- export default App;
+
+export default App
